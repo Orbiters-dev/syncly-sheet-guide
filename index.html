@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Syncly Sheet Workflow — ICO Custom Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f13;
+    color: #e4e4e7;
+    line-height: 1.6;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 60px 32px; }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 80px 0 60px;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.3);
+    color: #a78bfa;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+  .hero p {
+    font-size: 18px;
+    color: #a1a1aa;
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    padding: 40px 0;
+    margin: 40px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; color: #a78bfa; }
+  .stat-label { font-size: 13px; color: #71717a; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Section */
+  .section { margin: 64px 0; }
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #8b5cf6;
+    margin-bottom: 12px;
+  }
+  .section h2 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .section > p { color: #a1a1aa; font-size: 16px; margin-bottom: 32px; }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    margin-top: 48px;
+  }
+  .phase-header:first-child { margin-top: 0; }
+  .phase-tag {
+    background: rgba(139,92,246,0.2);
+    border: 1px solid rgba(139,92,246,0.4);
+    color: #c4b5fd;
+    padding: 4px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .phase-title { font-size: 20px; font-weight: 600; }
+
+  .step-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .step-line {
+    width: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .step-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #8b5cf6;
+    border: 2px solid #0f0f13;
+    outline: 2px solid rgba(139,92,246,0.3);
+    flex-shrink: 0;
+    margin-top: 20px;
+  }
+  .step-dot.skip-dot { background: #ef4444; outline-color: rgba(239,68,68,0.3); }
+  .step-dot.pass-dot { background: #10b981; outline-color: rgba(16,185,129,0.3); }
+  .step-connector {
+    width: 2px;
+    flex-grow: 1;
+    background: rgba(139,92,246,0.2);
+  }
+
+  .step-card {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .step-card:hover { border-color: rgba(139,92,246,0.3); }
+  .step-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .step-card p { font-size: 14px; color: #a1a1aa; }
+  .step-card .tools {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .tool-chip {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.2);
+    color: #c4b5fd;
+  }
+  .tool-chip.sheet { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2); color: #93c5fd; }
+  .tool-chip.gmail { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #fca5a5; }
+  .tool-chip.python { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); color: #fcd34d; }
+  .tool-chip.discord { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.2); color: #a5b4fc; }
+  .tool-chip.mcp { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); color: #6ee7b7; }
+
+  /* Skip / Pass banners */
+  .skip-banner {
+    background: rgba(239,68,68,0.08);
+    border: 1px dashed rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 12px 24px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #fca5a5;
+  }
+  .skip-banner strong { color: #f87171; }
+  .pass-banner {
+    background: rgba(16,185,129,0.08);
+    border: 1px dashed rgba(16,185,129,0.3);
+    border-radius: 10px;
+    padding: 12px 24px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #6ee7b7;
+  }
+
+  /* Sheets overview cards */
+  .sheets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .sheet-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sheet-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .sheet-card.read::before { background: linear-gradient(90deg, #818cf8, #60a5fa); }
+  .sheet-card.write::before { background: linear-gradient(90deg, #f472b6, #fb923c); }
+  .sheet-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .sheet-card .sheet-role {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .sheet-card.read .sheet-role { color: #818cf8; }
+  .sheet-card.write .sheet-role { color: #f472b6; }
+  .sheet-card p { font-size: 14px; color: #a1a1aa; }
+  .sheet-id {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 3px 8px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: #71717a;
+    word-break: break-all;
+  }
+  .id-note {
+    font-size: 12px;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* Placeholders table */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead { background: rgba(139,92,246,0.08); }
+  th {
+    text-align: left;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #a78bfa;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  td {
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: 'SF Mono', 'Fira Code', monospace; color: #c4b5fd; font-size: 13px; }
+  td:nth-child(2) { color: #e4e4e7; font-weight: 500; }
+  td:nth-child(3) { color: #a1a1aa; }
+  .col-tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .col-tag.key { background: rgba(251,191,36,0.1); color: #fbbf24; }
+  .col-tag.core { background: rgba(139,92,246,0.1); color: #c4b5fd; }
+  .col-tag.filter { background: rgba(244,114,182,0.1); color: #f472b6; }
+  .col-tag.aux { background: rgba(45,212,191,0.1); color: #2dd4bf; }
+
+  /* Rules cards */
+  .rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .rules-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .rule-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .rule-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .rule-card p { font-size: 14px; color: #a1a1aa; }
+  .rule-icon { font-size: 20px; }
+  .rule-card code {
+    background: rgba(139,92,246,0.1);
+    color: #c4b5fd;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  /* Score bars */
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .score-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .score-item .score-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .score-track {
+    height: 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .score-fill { height: 100%; border-radius: 3px; }
+  .score-detail { font-size: 12px; color: #71717a; }
+
+  /* Verdict row */
+  .verdict-row { display: flex; gap: 12px; margin-top: 16px; }
+  .verdict-row > div { flex: 1; }
+
+  /* Trigger */
+  .trigger-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .trigger-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+    color: #52525b;
+    font-size: 13px;
+  }
+
+  /* Note cards */
+  .note-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    border-left: 3px solid;
+  }
+  .note-card.warn { border-left-color: #fbbf24; }
+  .note-card.info { border-left-color: #60a5fa; }
+  .note-card.danger { border-left-color: #ef4444; }
+  .note-card.tip { border-left-color: #10b981; }
+  .note-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .note-card.warn h3 { color: #fbbf24; }
+  .note-card.info h3 { color: #60a5fa; }
+  .note-card.danger h3 { color: #f87171; }
+  .note-card.tip h3 { color: #34d399; }
+  .note-card p { font-size: 14px; color: #a1a1aa; }
+
+  .notes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="badge">CLAUDE CODE SKILL</div>
+    <h1>Syncly Sheet Workflow</h1>
+    <p>The ICO Custom Agent reads Syncly spreadsheet data, filters and scores each influencer, then drafts personalized outreach emails — one at a time, never generic.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">2</div>
+      <div class="stat-label">Sheets</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">6</div>
+      <div class="stat-label">Pipeline Steps</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">10</div>
+      <div class="stat-label">Data Columns</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">3</div>
+      <div class="stat-label">Python Scripts</div>
+    </div>
+  </div>
+
+  <!-- Two Sheets -->
+  <div class="section">
+    <div class="section-label">Data Sources</div>
+    <h2>Two Google Sheets</h2>
+    <p>The workflow uses two separate sheets with distinct roles: one for reading influencer data, one for writing status updates.</p>
+
+    <div class="sheets-grid">
+      <div class="sheet-card read">
+        <h3>Content Extraction Sheet</h3>
+        <div class="sheet-role">READ ONLY &mdash; Syncly Data Source</div>
+        <p>Contains influencer profiles, content summaries, transcripts, and bios. Data is fetched via WebFetch as CSV.</p>
+        <div class="sheet-id">ID: config.json &rarr; google_sheet.spreadsheet_id</div>
+        <div class="id-note" style="color:#fbbf24;">Sheet ID changes with every new batch &mdash; always check config.json</div>
+      </div>
+      <div class="sheet-card write">
+        <h3>Creators Management Sheet</h3>
+        <div class="sheet-role">WRITE ONLY &mdash; Status Tracking</div>
+        <p>Records partnership status (Col B) and blacklist flags (Col C). Updated automatically by <code>update_sheet.py</code>.</p>
+        <div class="sheet-id">ID: 1dIAhP8wCEdFulSAai3K-RoZTvLBIaWxAK7hzInBsF0o</div>
+        <div class="id-note" style="color:#34d399;">Always the same sheet &mdash; ID never changes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activation -->
+  <div class="section">
+    <div class="section-label">Activation</div>
+    <h2>How It Triggers</h2>
+    <p>The Custom agent activates when a user mentions any of these keywords:</p>
+    <div class="trigger-examples">
+      <div class="trigger-chip">"custom"</div>
+      <div class="trigger-chip">"outreach"</div>
+      <div class="trigger-chip">"send emails"</div>
+      <div class="trigger-chip">"draft"</div>
+      <div class="trigger-chip">"influencer"</div>
+      <div class="trigger-chip">/ico</div>
+    </div>
+  </div>
+
+  <!-- Column Map -->
+  <div class="section">
+    <div class="section-label">Data Structure</div>
+    <h2>Content Sheet Column Map</h2>
+    <p>10 columns fetched via WebFetch and their roles in the pipeline.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Column</th><th>Field</th><th>Purpose</th><th>Tag</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>G</td><td>Username</td><td>@handle &mdash; used in email greeting and tracking</td><td><span class="col-tag key">KEY</span></td></tr>
+          <tr><td>H</td><td>Profile URL</td><td>Primary match key for dedup and sheet updates</td><td><span class="col-tag key">KEY</span></td></tr>
+          <tr><td>Q</td><td>Summary</td><td>Content summary &mdash; personalization hook starting point</td><td><span class="col-tag core">CORE</span></td></tr>
+          <tr><td>R</td><td>Theme</td><td>Content theme &mdash; generates {content_reference}</td><td><span class="col-tag core">CORE</span></td></tr>
+          <tr><td>S</td><td>Text</td><td>Post text &mdash; supplementary personalization material</td><td><span class="col-tag aux">AUX</span></td></tr>
+          <tr><td>T</td><td>Transcript</td><td>Video transcript &mdash; the most important column for personalization</td><td><span class="col-tag core">CORE</span></td></tr>
+          <tr><td>U</td><td>Caption</td><td>Caption text &mdash; supplementary + Fit Score input</td><td><span class="col-tag aux">AUX</span></td></tr>
+          <tr><td>W</td><td>Nickname</td><td>first_name &mdash; used in "Hi, {name}!" greeting</td><td><span class="col-tag key">KEY</span></td></tr>
+          <tr><td>X</td><td>Bio_text</td><td>Bio &mdash; geo filter + brand detection + Fit Score</td><td><span class="col-tag filter">FILTER</span></td></tr>
+          <tr><td>Y</td><td>Email</td><td>Email address (reference; actual email provided separately)</td><td><span class="col-tag key">KEY</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="section">
+    <div class="section-label">Pipeline</div>
+    <h2>Per-Influencer Processing Flow</h2>
+    <p>Each influencer is processed one at a time. The full cycle must complete before moving to the next person.</p>
+
+    <div class="flow">
+
+      <!-- Phase 1: Pre-Outreach -->
+      <div class="phase-header">
+        <span class="phase-tag">PHASE 1</span>
+        <span class="phase-title">Pre-Outreach Validation</span>
+      </div>
+
+      <div class="step-row">
+        <div class="step-line"><div class="step-dot"></div><div class="step-connector"></div></div>
+        <div class="step-card">
+          <h3>1. WebFetch from Syncly Sheet</h3>
+          <p>Fetch the influencer's row as CSV using their Profile URL as the match key. If multiple rows exist, select the one with the <strong>richest Transcript</strong>.</p>
+          <div class="tools">
+            <span class="tool-chip sheet">Google Sheets CSV</span>
+            <span class="tool-chip">WebFetch</span>
+          </div>
+          <div class="skip-banner">
+            <strong>Skip:</strong> If WebFetch returns empty, skip immediately. No email can be written without Syncly data.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-line"><div class="step-dot skip-dot"></div><div class="step-connector"></div></div>
+        <div class="step-card">
+          <h3>2. Three Pre-Filters</h3>
+          <p>If any filter triggers, the influencer is immediately skipped and auto-blacklisted via <code>update_sheet.py --blacklist</code>.</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+              <div style="font-size:13px; font-weight:600; color:#e4e4e7; margin-bottom:4px;">Geo Filter</div>
+              <div style="font-size:12px; color:#71717a;">Non-US/CA locations in Bio (country names, cities, flag emojis)</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+              <div style="font-size:13px; font-weight:600; color:#e4e4e7; margin-bottom:4px;">Account Type</div>
+              <div style="font-size:12px; color:#71717a;">Brand, meme, or curation accounts (2+ signals required)</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+              <div style="font-size:13px; font-weight:600; color:#e4e4e7; margin-bottom:4px;">Email Validation</div>
+              <div style="font-size:12px; color:#71717a;">Malformed addresses, temp domains, suspicious domains</div>
+            </div>
+          </div>
+          <div class="tools">
+            <span class="tool-chip python">fit_scorer.py</span>
+            <span class="tool-chip python">update_sheet.py</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-line"><div class="step-dot"></div><div class="step-connector"></div></div>
+        <div class="step-card">
+          <h3>3. Three-Way Duplicate Check</h3>
+          <p>Checks 3 sources simultaneously. If any match is found, mark as <strong>[DUPLICATE]</strong>. Drafts do NOT count as duplicates &mdash; only Sent mail is checked.</p>
+          <div class="rules-grid three" style="margin-top:12px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#fbbf24; margin-bottom:4px;">#1</div>
+              <div style="font-size:13px; font-weight:600; color:#e4e4e7; margin-bottom:4px;">zezebaebae.com</div>
+              <div style="font-size:12px; color:#71717a;">Local Python &mdash; <code>check_duplicate.py</code></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#fbbf24; margin-bottom:4px;">#2</div>
+              <div style="font-size:13px; font-weight:600; color:#e4e4e7; margin-bottom:4px;">onzenna.com</div>
+              <div style="font-size:12px; color:#71717a;">Gmail MCP &mdash; <code>gmail_search_messages</code></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+              <div style="font-size:11px; font-weight:700; color:#fbbf24; margin-bottom:4px;">#3</div>
+              <div style="font-size:13px; font-weight:600; color:#e4e4e7; margin-bottom:4px;">Creators Sheet</div>
+              <div style="font-size:12px; color:#71717a;">WebFetch &mdash; Col B (status), Col C (blacklist)</div>
+            </div>
+          </div>
+          <div class="tools">
+            <span class="tool-chip python">check_duplicate.py</span>
+            <span class="tool-chip mcp">Gmail MCP</span>
+            <span class="tool-chip sheet">Google Sheets</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-line"><div class="step-dot"></div><div class="step-connector"></div></div>
+        <div class="step-card">
+          <h3>4. Fit Score Calculation (0&ndash;100)</h3>
+          <p><code>fit_scorer.py</code> takes Syncly data as JSON and scores how well the influencer fits the Onzenna brand.</p>
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="score-label" style="color:#818cf8;">Parenting Keyword Density</div>
+              <div class="score-track"><div class="score-fill" style="width:40%; background:linear-gradient(90deg,#818cf8,#6366f1);"></div></div>
+              <div class="score-detail">Max 40pts &mdash; keyword count in Summary + Theme + Transcript + Caption</div>
+            </div>
+            <div class="score-item">
+              <div class="score-label" style="color:#60a5fa;">Transcript Richness</div>
+              <div class="score-track"><div class="score-fill" style="width:20%; background:linear-gradient(90deg,#60a5fa,#3b82f6);"></div></div>
+              <div class="score-detail">Max 20pts &mdash; 200+ chars = 20pts, 50+ = 15pts</div>
+            </div>
+            <div class="score-item">
+              <div class="score-label" style="color:#f472b6;">Bio Relevance</div>
+              <div class="score-track"><div class="score-fill" style="width:20%; background:linear-gradient(90deg,#f472b6,#ec4899);"></div></div>
+              <div class="score-detail">Max 20pts &mdash; 3+ parenting keywords in Bio = 20pts</div>
+            </div>
+            <div class="score-item">
+              <div class="score-label" style="color:#34d399;">Theme + Competitor</div>
+              <div class="score-track"><div class="score-fill" style="width:20%; background:linear-gradient(90deg,#34d399,#10b981);"></div></div>
+              <div class="score-detail">Max 20pts &mdash; parenting theme (10) + competitor brand experience (10)</div>
+            </div>
+          </div>
+          <div class="verdict-row">
+            <div class="pass-banner"><strong>40+ points</strong> &rarr; Proceed to email writing</div>
+            <div class="skip-banner"><strong>0&ndash;39 points</strong> &rarr; Skip + auto-blacklist</div>
+          </div>
+          <div class="tools">
+            <span class="tool-chip python">fit_scorer.py</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2: Outreach -->
+      <div class="phase-header">
+        <span class="phase-tag">PHASE 2</span>
+        <span class="phase-title">Personalized Outreach</span>
+      </div>
+
+      <div class="step-row">
+        <div class="step-line"><div class="step-dot pass-dot"></div><div class="step-connector"></div></div>
+        <div class="step-card">
+          <h3>5. Personalized Email Draft</h3>
+          <p>Based on the config.json template, fill two personalization fields from Syncly data:</p>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:16px; margin-top:12px; font-size:13px; line-height:1.8; color:#a1a1aa;">
+            <strong style="color:#c4b5fd;">Subject:</strong> Onzenna x {first_name} &#128064;&#129293;<br>
+            <strong style="color:#c4b5fd;">From:</strong> affiliates@onzenna.com (Jane)<br>
+            <span style="color:#52525b;">&mdash;&mdash;&mdash;</span><br>
+            Hi, {name}! (@{username})<br><br>
+            I came across your recent <span style="color:#93c5fd;">{content_reference}</span><br>
+            <span style="color:#6ee7b7;">{personalized_observation}</span><br>
+            <span style="color:#52525b;">... (template body) ...</span>
+          </div>
+          <div style="margin-top:12px; font-size:13px; color:#a1a1aa;">
+            <strong style="color:#c4b5fd;">Quality self-check (all 3 must pass):</strong><br>
+            1. Could this be sent to anyone else as-is? &rarr; Must be <strong>NO</strong><br>
+            2. Does it contain specific Syncly content? &rarr; Must be <strong>YES</strong><br>
+            3. Could it have been written without Syncly data? &rarr; Must be <strong>NO</strong>
+          </div>
+          <div class="tools">
+            <span class="tool-chip mcp">Gmail MCP</span>
+            <span class="tool-chip gmail">gmail_create_draft</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-line"><div class="step-dot"></div><div class="step-connector" style="background: transparent;"></div></div>
+        <div class="step-card">
+          <h3>6. Sheet Update + Discord Report</h3>
+          <p>After each draft, update the Creators sheet. At batch end, post a summary report to Discord.</p>
+          <div class="rules-grid" style="margin-top:12px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+              <div style="font-size:13px; font-weight:600; color:#e4e4e7; margin-bottom:4px;">Writeback</div>
+              <div style="font-size:12px; color:#71717a;"><code>--sent</code> &rarr; Col B = "In Progress"<br><code>--blacklist</code> &rarr; Col C = TRUE</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+              <div style="font-size:13px; font-weight:600; color:#e4e4e7; margin-bottom:4px;">Discord Report</div>
+              <div style="font-size:12px; color:#71717a;">Drafts created, skipped counts by category (geo, brand, fit, duplicate)</div>
+            </div>
+          </div>
+          <div class="tools">
+            <span class="tool-chip python">update_sheet.py</span>
+            <span class="tool-chip discord">Discord Webhook</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tools -->
+  <div class="section">
+    <div class="section-label">Stack</div>
+    <h2>Scripts &amp; Integrations</h2>
+    <div class="rules-grid">
+      <div class="rule-card">
+        <h3>fit_scorer.py</h3>
+        <p>Syncly data &rarr; JSON input &rarr; 0&ndash;100 fitness score. Pre-filters (geo, brand, email) are built in.</p>
+        <div style="margin-top:8px;"><code>ICO-workflow/scripts/fit_scorer.py</code></div>
+      </div>
+      <div class="rule-card">
+        <h3>check_duplicate.py</h3>
+        <p>Searches the <code>zezebaebae.com</code> Gmail for existing Sent threads. Returns CLEAR or DUPLICATE.</p>
+        <div style="margin-top:8px;"><code>ICO-workflow/tools/check_duplicate.py</code></div>
+      </div>
+      <div class="rule-card">
+        <h3>update_sheet.py</h3>
+        <p>Updates the Creators sheet: partnership status (Col B) or blacklist flag (Col C) by Profile URL match.</p>
+        <div style="margin-top:8px;"><code>ICO-workflow/tools/update_sheet.py</code></div>
+      </div>
+      <div class="rule-card">
+        <h3>Gmail MCP</h3>
+        <p>Creates email drafts on <code>affiliates@onzenna.com</code> and searches Sent mail for dedup checks.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Handoff Notes -->
+  <div class="section">
+    <div class="section-label">Handoff</div>
+    <h2>Key Things to Know</h2>
+    <p>Critical details for anyone taking over this workflow.</p>
+
+    <div class="notes-grid">
+      <div class="note-card warn">
+        <h3>Sheet ID Changes Per Batch</h3>
+        <p>The content extraction sheet gets a new ID with each batch. Always verify <code>config.json</code> values for <code>spreadsheet_id</code> and <code>data_tab</code> before starting.</p>
+      </div>
+      <div class="note-card info">
+        <h3>Drafts Only &mdash; Never Auto-Send</h3>
+        <p>The agent only creates Gmail Drafts. A human must review and send manually. This is by design.</p>
+      </div>
+      <div class="note-card danger">
+        <h3>One-at-a-Time Processing</h3>
+        <p>Batch-fetching N influencers at once causes personalization quality to plummet. Always complete one full cycle before moving to the next person.</p>
+      </div>
+      <div class="note-card tip">
+        <h3>Transcript Is King</h3>
+        <p>Column T (Transcript) is the most important source for personalization. When multiple rows exist, always pick the row with the richest Transcript.</p>
+      </div>
+      <div class="note-card warn">
+        <h3>Know Your Gmail Accounts</h3>
+        <p><strong>onzenna.com</strong> = Gmail MCP (draft creation + dedup).<br><strong>zezebaebae.com</strong> = Local Python (dedup only). Don't mix them up.</p>
+      </div>
+      <div class="note-card info">
+        <h3>Agent Role Separation</h3>
+        <p><strong>Custom</strong> = initial outreach only. Reply handling and follow-ups are managed by the <strong>Manager</strong> agent. Both send as Jane.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Syncly Sheet Workflow &middot; ICO Custom Agent &middot; Built for Orbiters / Onzenna &middot; Claude Code
+  </div>
+
+</div>
+</body>
+</html>
